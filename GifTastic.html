@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Giftastic</title>
+    <style type="text/css">
+        div,
+        form,
+        input {
+          margin: 10px;
+          
+        }
+        button:hover{
+          color:red;
+        }
+        #animal-form{
+         float:right;
+        }
+        .name{
+          float:left;
+        }
+        body{
+          background-color: rgba(128, 105, 255, 0.51);
+        }
+        label{
+          padding-left:10px;
+        }
+        #add-animal{
+          background-color: teal;
+        }
+        button{
+          background-color: teal;
+          color: white;
+          margin: 5px;
+        }
+        h1{
+          margin-left:15px;
+        }
+        </style>
+</head>
+<body>
+    
+  <div class="container">
+        <h1>Animal Search</h1>
+    
+          <!-- Rendered Buttons will get Dumped Here  -->
+          <div id="buttons-view"></div>
+
+          <form id="animal-form">
+            <label for="animal-input">Add an Animal:</label>
+            <br>
+            <input type="text" id="animal-input">
+            <br>
+      
+            <!-- Button triggers new animal to be added -->
+            <input id="add-animal" type="submit" value="Submit">
+          </form>
+          <br>
+          <br>
+          <br>
+          <br>
+          <br>
+          <br>
+
+        <!-- Animals will Get Dumped here -->
+        <div id="animals-view"></div>
+    
+        
+
+    
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <script type="text/javascript">
+          // Initial array of animals
+          var animals = ["dog", "cat", "lion", "zebra", "parrot", "ferret", "fish", "horse", "unicorn","tiger", "polar-bears" ];
+
+
+          // Function for displaying animal data
+          function renderButtons(){
+
+            // Delete the content inside the buttons-view div prior to adding new animals
+            // (this is necessary otherwise you will have repeat buttons)
+              $("#buttons-view").empty();
+
+               // Loop through the array of animals, then generate buttons for each animal in the array
+              for(var i = 0; i<animals.length;i++){
+                var a = $("<button>").addClass("animal").attr("data-name", animals[i]).text(animals[i]);
+                
+                $("#buttons-view").append(a);
+              }
+          }
+
+          // This function handles events where the add animal button is clicked
+          $("#add-animal").on("click", function(event){
+              // Preventing the submit button from trying to submit the form // event.preventDefault() prevents submit button from trying to send a form.
+              // We're optionally using a form so the user may hit Enter to search instead of clicking the button
+              // Prevents the page refresh 
+              // Using a submit button instead of a regular button allows the user to hit "Enter" instead of clicking the button if desired
+              event.preventDefault();
+              // Here we grab the text from the input box // Write code to grab the text the user types into the input field // Trim removes white space from the beginning and end
+              var animal = $("#animal-input").val().trim();
+              // Write code to add the new animal into the animals array
+              animals.push(animal);
+              // The renderButtons function is called, rendering the list of animals buttons
+              renderButtons();
+          });
+          // Calling the renderButtons function to display the initial list of animals
+          renderButtons();
+
+          function displayGifs (){
+        // console.log("Button Clicked");
+        //The data type is name
+        // It allows me to host what each data type is for the button clicked
+        var x = $(this).data("name");
+        console.log(x);
+
+          // Here we construct our URL
+          var queryURL = "http://api.giphy.com/v1/gifs/search?q="+x+"&api_key=imqCEt1wPtNpI7rEYPj6gNMlAkXlIt1e&limit=10";
+        $.ajax({url:queryURL, method:"GET"})
+            .done(function(response){
+                console.log(response);
+                for (var i = 0; i < response.data.length;i++){
+                  
+                    // declare a new variable, animalDiv is equal to the jQuery of div
+                     var animalDiv = $("<div>");
+                     animalDiv.addClass("name");
+                    //we are going to be giving it a paragraph... Modifying the text of the paragraph and have the text be ratings
+                    var p = $("<p>").text("Rating: "+response.data[i].rating);
+
+                    //We will be modifying a jQuery image tag anytime we call animalImage
+                    var animalImage = $("<img>");
+                    //Modifying the src attribute of the image // Set the image's src to results[i]'s fixed_height.url.
+                    animalImage.attr("src", response.data[i].images.fixed_height_still.url);
+
+                    // Set the image's src to results[i]'s fixed_height.url.
+                    animalImage.attr({"data-animate": response.data[i].images.fixed_height.url});
+
+                    animalImage.attr({"data-state": "still"});
+                    animalImage.attr({"data-still": response.data[i].images.fixed_height_still.url});
+               
+                    // Append the p variable to the animalDiv variable.
+                    animalDiv.append(p);
+                    // Append the animalImage variable to the animalDiv variable.
+                    animalDiv.append(animalImage);
+                    // Prepend the animalDiv variable to the element with an id of animals-view.
+                    $("#animals-view").prepend(animalDiv);
+               
+                // $("#animals-view").prepend("<img src = "+response.data[i].images.downsized.url+">");
+                // $("#animals-view").prepend("<p>Rating: "+response.data[i].rating+"</p>");
+                }
+                $("img").on("click", function() {
+                // The attr jQuery method allows us to get or set the value of any attribute on our HTML element
+                var state = $(this).attr("data-state");
+                // If the clicked image's state is still, update its src attribute to what its data-animate value is.
+                // Then, set the image's data-state to animate
+                // Else set src to the data-still value
+                if (state === "still") {
+                  $(this).attr("src", $(this).attr("data-animate"));
+                  $(this).attr("data-state", "animate");
+                } else {
+                  $(this).attr("src", $(this).attr("data-still"));
+                  $(this).attr("data-state", "still");
+                }
+                });
+                });
+                };
+
+                $(document).on("click",".animal",displayGifs);
+        </script>
+</body>
+</html>
